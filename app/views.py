@@ -1,4 +1,4 @@
-from django.shortcuts import render, HttpResponse, redirect, reverse
+from django.shortcuts import render, HttpResponse, redirect
 from app import models
 from django.views import View
 from app.utils import gen_md5_digest, Pagination, user_id, get_date
@@ -10,12 +10,6 @@ import base64
 
 
 # Create your views here.
-
-
-def test(request):
-    lst = [0, 1]
-    return render(request, 'test.html', {'i': lst})
-
 
 # 登录
 def login(request):
@@ -50,7 +44,10 @@ def logout(request):
 # 供应商列表
 def supplier_list(request):
     # 获取用户id
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     # 获取供应商信息
     all_suppliers = models.Supplier.objects.filter(company__user__no=user).distinct()
     # 页码
@@ -67,7 +64,10 @@ class SupplierAdd(View):
     # get 请求
     def get(self, request):
         # 获取用户ID
-        user = user_id(request)
+        if user_id(request):
+            user = user_id(request)
+        else:
+            return redirect('/login/')
         # 获取对应公司
         com = models.Company.objects.filter(user=user)
         return render(request, 'supplier_add.html', {'com': com})
@@ -105,7 +105,10 @@ class SupplierAdd(View):
 # 编辑供应商和公司
 def supplier_edit(request):
     # 获取用户ID
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     # 获取供应商及公司编号
     sup_no = request.GET.get('sup_no')
     try:
@@ -135,7 +138,10 @@ def supplier_edit(request):
 # 预付款表
 def adv_list(request):
     # 获取用户ID
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     # 获取供应商信息
     sup_no = request.GET.get('sup_no')
     all_advs = models.Advpayment.objects.filter(supplier=sup_no, company__user_id=user)
@@ -146,7 +152,10 @@ def adv_list(request):
 # 客户列表
 def client_list(request):
     # 获取用户ID
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     # 获取供应商信息
     all_clients = models.Client.objects.filter(company__user=user).distinct()
     # 页码
@@ -163,7 +172,10 @@ class ClientAdd(View):
     # get 请求
     def get(self, request):
         # 获取用户ID
-        user = user_id(request)
+        if user_id(request):
+            user = user_id(request)
+        else:
+            return redirect('/login/')
         com = models.Company.objects.filter(user__no=user)
         return render(request, 'client_add.html', {'com': com})
 
@@ -173,9 +185,11 @@ class ClientAdd(View):
         # 获取用户输入的数据
         cli_name = request.POST.get('cli_name')
         com_no = request.POST.get('com_no')
-
         # 获取用户ID
-        user = user_id(request)
+        if user_id(request):
+            user = user_id(request)
+        else:
+            return redirect('/login/')
         com = models.Company.objects.filter(user__no=user)
         try:
             if not cli_name:
@@ -206,7 +220,10 @@ class ClientAdd(View):
 # 编辑客户
 def client_edit(request):
     # 获取用户ID
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     # 获取公司及客户编号
     cli_no = request.GET.get('cli_no')
     try:
@@ -235,11 +252,14 @@ def client_edit(request):
 # 欠款表
 def debt_list(request):
     # 获取用户ID
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     # 获取供应商信息
     cli_no = request.GET.get('cli_no')
 
-    all_debts = models.Debt.objects.filter(client_id=cli_no)
+    all_debts = models.Debt.objects.filter(client_id=cli_no, company__user_id=user).distinct()
     # 返回页面
     return render(request, 'debt_list.html', {'all_debts': all_debts, })
 
@@ -247,7 +267,10 @@ def debt_list(request):
 # 司机列表
 def driver_list(request):
     # 获取用户ID
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     # 获取司机列表
     all_drivers = models.Driver.objects.filter(user_id=user)
     count = all_drivers.count()
@@ -259,7 +282,10 @@ def driver_list(request):
 # 编辑司机
 def driver_edit(request):
     # 获取用户ID
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     # 获取公司及客户编号
     dri_no = request.GET.get('dri_no')
     try:
@@ -287,7 +313,10 @@ def driver_edit(request):
 # 司机查询
 def driver_search(request):
     # 获取用户ID
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     # 获取司机列表
     all_drivers = models.Driver.objects.filter(user_id=user)
     all_orders = None
@@ -325,7 +354,10 @@ def driver_search(request):
 # 增加司机
 def driver_add(request):
     # 获取用户ID
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     response_dict = {'status': True, 'msg': None}
     try:
         driver_name = request.POST.get('driver_name')
@@ -347,7 +379,10 @@ def driver_add(request):
 # 销售列表
 def sale_list(request):
     # 获取用户ID
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     # 获取司机列表
     all_sales = models.Sale.objects.filter(user_id=user)
     count = all_sales.count()
@@ -359,7 +394,10 @@ def sale_list(request):
 # 编辑司机
 def sale_edit(request):
     # 获取用户ID
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     # 获取公司及客户编号
     sale_no = request.GET.get('sale_no')
     try:
@@ -387,7 +425,10 @@ def sale_edit(request):
 # 销售查询
 def sale_search(request):
     # 获取用户ID
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     # 获取销售列表
     all_sales = models.Sale.objects.filter(user=user)
     all_orders = None
@@ -429,7 +470,10 @@ def sale_search(request):
 # 增加销售
 def sale_add(request):
     # 获取用户ID
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     response_dict = {'status': True, 'msg': None}
     try:
         sale_name = request.POST.get('sale_name')
@@ -451,7 +495,10 @@ def sale_add(request):
 # 订单列表
 def order_list(request):
     # 获取用户ID
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     # 获取该用户对应的要素
     all_drivers = models.Driver.objects.filter(user=user)
     all_companys = models.Company.objects.filter(user=user)
@@ -492,7 +539,10 @@ def order_list(request):
 # 增加订单
 def order_add(request):
     # 获取用户ID
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     response_dict = {'status': True, 'msg': None}
 
     try:
@@ -568,7 +618,10 @@ def order_add(request):
 # 删除订单
 def order_del(request):
     # 获取用户
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     order_no = request.GET.get('ord_no')
     try:
         # 获取订单对象
@@ -595,7 +648,10 @@ def order_del(request):
 # 商品列表
 def good_list(request):
     # 获取用户ID
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     # 当前日期
     cur_date = get_date()
     all_goods = models.Good.objects.filter(end_date__gte=cur_date, start_date__lte=cur_date,
@@ -607,13 +663,19 @@ def good_list(request):
 class GoodAdd(View):
     def get(self, request):
         # 获取用户ID
-        user = user_id(request)
+        if user_id(request):
+            user = user_id(request)
+        else:
+            return redirect('/login/')
         all_suppliers = models.Supplier.objects.filter(company__user__no=user).distinct()
         return render(request, 'good_add.html', {'all_suppliers': all_suppliers})
 
     def post(self, request):
         #
-        user = user_id(request)
+        if user_id(request):
+            user = user_id(request)
+        else:
+            return redirect('/login/')
         # 获取数据
         sup_no = request.POST.get('sup_no')
         good_name = request.POST.get('good_name')
@@ -640,7 +702,10 @@ class GoodAdd(View):
 # 编辑商品
 def good_edit(request):
     # 获取用户ID
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     response_dict = {'status': True, 'msg': 'None'}
     try:
         sup_no = request.POST.get('sup_no')
@@ -648,7 +713,7 @@ def good_edit(request):
         good_name = request.POST.get('good_name')
         buying_price = request.POST.get('buying_price')
         eff_date = request.POST.get('eff_date')
-        good_obj = models.Good.objects.get(no=good_no)
+        good_obj = models.Good.objects.filter(no=good_no, supplier__company__user_id=user).first()
         if models.Good.objects.filter(supplier_id=sup_no, name=good_name, buying_price=buying_price,
                                       end_date='2099-12-31'):
             response_dict['status'] = False
@@ -675,7 +740,10 @@ def good_edit(request):
 # 订单详情
 def order_detal(request):
     # 获取用户ID
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     error = ''
     order_obj = models.Order.objects.filter(no=-1).first()
     try:
@@ -689,7 +757,10 @@ def order_detal(request):
 # 付款单列表
 def payment_list(request):
     # 获取用户ID
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     all_companys = models.Company.objects.filter(user_id=user)
     page = Pagination(request, 0)
     error = ''
@@ -720,7 +791,10 @@ def payment_list(request):
 # 创建付款单
 def payment_add(request):
     # 获取用户ID
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     response_dict = {'status': True, 'msg': None}
     try:
         creat_dict = {}
@@ -752,7 +826,10 @@ def payment_add(request):
 # 删除付款单
 def payment_del(request):
     # 获取用户
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     pay_no = request.GET.get('pay_no')
     try:
         # 获取付款单对象
@@ -774,7 +851,10 @@ def payment_del(request):
 # 收款人列表
 def receipt_list(request):
     # 获取用户ID
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     all_companys = models.Company.objects.filter(user_id=user)
     page = Pagination(request, 0)
     error = ''
@@ -804,7 +884,10 @@ def receipt_list(request):
 # 创建收款单
 def receipt_add(request):
     # 获取用户ID
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     response_dict = {'status': True, 'msg': None}
     try:
         creat_dict = {}
@@ -835,7 +918,10 @@ def receipt_add(request):
 # 删除收款单
 def receipt_del(request):
     # 获取用户
-    user = user_id(request)
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
     rec_no = request.GET.get('rec_no')
     try:
         # 获取收款单对象

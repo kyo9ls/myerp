@@ -1,7 +1,6 @@
 import hashlib
 import datetime
 
-
 def gen_md5_digest(content):
     return hashlib.md5(content.encode()).hexdigest()
 
@@ -10,9 +9,14 @@ def get_date(days=0):
     d = datetime.datetime.now() + datetime.timedelta(days=days)
     return d.strftime('%Y-%m-%d')
 
+
 # 获取用户id
 def user_id(request):
-    return 2
+    if request.session.get('userid'):
+        user = request.session.get('userid')
+        return user
+    else:
+        return ''
 
 
 class Pagination:
