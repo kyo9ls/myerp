@@ -1,0 +1,202 @@
+{% extends 'mother_board.html' %}
+
+{% block css %}
+    {% load static %}
+    <link href="{% static 'plugins/bootstrap-select/css/bootstrap-select.min.css' %}" rel="stylesheet">
+    <link href="{% static 'plugins/bootstrap-datepicker-master/css/bootstrap-datepicker.min.css' %}" rel="stylesheet">
+{% endblock %}
+{% block  driver_active %}
+    active
+{% endblock %}
+{% block main %}<h2 class="sub-header">司机订单查询</h2>
+    <button type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal" id="dirver_add">
+        新增
+    </button>
+    <button type="button" class="btn btn-primary" id="driver_select">
+        查询
+    </button>
+    <a href="/driver_list" class="btn btn-default">返回</a>
+    <br>
+    <br>
+    <form id="select_form" action="/driver_search/" method="get">
+        {% csrf_token %}
+        <div class="form-group clearfix" id="select_args">
+            <div class="col-md-2">
+                <label for="dirver_name" class="control-label">司机名称:</label>
+                <div class="input-group">
+                    <select name="driver_no" class="selectpicker" data-live-search="true" data-size="5"
+                            data-width="150px" id="driver_name" name="driver_name" title="请选择司机">
+                        {% for driver in all_drivers %}
+                            <option value="{{ driver.no }}">{{ driver.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label for="startDate" class="control-label">起始日期:</label>
+                <div class='input-group date' id='start_date' name="start_date">
+                    <input type='text' class="form-control" id="start" name="start"/>
+                    <span class="input-group-addon">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                </span>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label for="endDate" class="control-label">截至日期:</label>
+                <div class='input-group date' id='end_date' name="end_date">
+                    <input type='text' class="form-control" id="end" name="end"/>
+                    <span class="input-group-addon">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+                <div class="col-md-3"><label>{{ select_error }}</label></div>
+            </div>
+
+        </div>
+    </form>
+    {#    </div>#}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+            <div class="col-md-6 left">
+                <label>{{ s_name }}</label>
+            </div>
+            <div class="col-md-6">
+                <label>{{ s_date }}</label>
+            </div>
+            <tr>
+                <th>序号</th>
+                <th>日期</th>
+                <th>供应商</th>
+                <th>客户</th>
+                <th>运费</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% load mytags %}
+            {% for order in all_orders %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ order.order_date|date:'Y-m-d' }}</td>
+                    <td>{{ order.supplier.name }}</td>
+                    <td>{{ order.client.name }}</td>
+                    <td>{{ order.driver_price|times:order.number }}</td>
+
+                    <td>
+                        {# <a class="btn btn-danger btn-sm" href="{% url 'del' 'driver'  i.pk %}">删除</a>#}
+                        <button class="btn btn-primary btn-sm"
+                                onclick=window.open("/order_detal/?order_no={{ order.no }}")>
+                            查看
+                        </button>
+                    </td>
+                </tr>
+            {% endfor %}
+            {% if all_orders %}
+                <tr>
+                    <td>合计</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>{{ total_price }}</td>
+                </tr>
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document" id="driver_add_modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">添加司机</h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="driver_name" class="col-sm-2 control-label">司机</label>
+                            <div class="col-sm-5">
+                                <input type="text" class="form-control" id="driver_name" name="driver_name"
+                                       placeholder="">
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <div class="col-lg-6">
+                                <span id="error" style="color: #ff0000"></span>
+                            </div>
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-primary" id="driver_add_submit">确定</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if all_orders %}
+        <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {{ page_html|safe }}
+        </ul>
+    {% endif %}
+</nav>
+{% endblock %}
+{% block script %}
+    <script src="{% static 'plugins/bootstrap-select/js/bootstrap-select.min.js' %}"></script>
+    <script src="{% static 'plugins/bootstrap-select/js/i18n/defaults-zh_CN.min.js' %}"></script>
+    <script src="{% static 'plugins/bootstrap-datepicker-master/js/bootstrap-datepicker.min.js' %}"></script>
+    <script src="{% static 'plugins/bootstrap-datepicker-master/locales/bootstrap-datepicker.zh-CN.min.js' %}"></script>
+
+    <script>
+
+        $(function initDatePicker() {
+            $('#start_date,#end_date').datepicker({
+                format: "yyyy-mm-dd",
+                language: "zh-CN",
+                startDate: "-30d",
+                todayBtn: "linked",
+                autoclose: true,
+            });
+        });
+        $(function () {
+            bindClickEvent();
+        });
+
+        function bindClickEvent() {
+            $('#driver_add').click(function () {
+                $('#myModal').modal('show')
+            });
+
+            $('#driver_add_submit').click(function () {
+                var driver = {};
+                $('#driver_add_modal').find('input').each(function () {
+                    var driver_key = $(this).attr('name');
+                    var driver_value = $(this).val();
+                    driver[driver_key] = driver_value;
+                });
+                $.ajax({
+                    url: /driver_add/,
+                    type: 'POST',
+                    data: driver,
+                    success: function (args) {
+                        var response_dict = JSON.parse(args)
+                        if (response_dict.status) {
+                            window.location.reload();
+                        } else {
+                            $('#error').text(response_dict.msg);
+                        }
+                    }
+                })
+            });
+        }
+
+        $(function () {
+            $('#driver_select').click(function () {
+                document.getElementById("select_form").submit();
+                ;
+            })
+        })
+    </script>
+{% endblock %}

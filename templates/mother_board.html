@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    {% load static %}
+    <link href="{% static 'plugins/bootstrap-3.3.7-dist/css/bootstrap.css' %}" rel="stylesheet">
+    <link href="{% static 'css/dashboard.css' %}" rel="stylesheet">
+    {% block css %}
+    {% endblock %}
+</head>
+
+
+<body>
+{% block nav %}
+    {% include 'nav.html' %}
+{% endblock %}
+
+
+<div class="container-fluid">
+    <div class="row">
+        {% block left %}
+            <div class="col-sm-3 col-md-2 sidebar">
+                <ul class="nav nav-sidebar">
+                    <li class="{% block  order_active %}{% endblock %}"><a href="/order_list/">订单</a></li>
+                    <li class="{% block  payment_active %}{% endblock %}"><a href="/payment_list/">付款单</a></li>
+                    <li class="{% block  receipt_active %}{% endblock %}"><a href="/receipt_list/">收款单</a></li>
+                    <li class="{% block  supplier_active %}{% endblock %}"><a href="/supplier_list/">供应商</a></li>
+                    <li class="{% block  client_active %}{% endblock %}"><a href="/client_list/">客户</a></li>
+                    <li class="{% block  driver_active %}{% endblock %}"><a href="/driver_list/">司机</a></li>
+                    <li class="{% block  sale_active %}{% endblock %}"><a href="/sale_list/">销售人员</a></li>
+                    <li class="{% block  good_active %}{% endblock %}"><a href="/good_list/">商品</a></li>
+
+
+                </ul>
+            </div>
+        {% endblock %}
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            {% block main %}
+
+            {% endblock %}
+        </div>
+    </div>
+</div>
+
+
+{% load static %}
+<script src="{% static 'plugins/bootstrap-3.3.7-dist/js/jquery.js' %}"></script>
+<script src="{% static 'plugins/bootstrap-3.3.7-dist/js/bootstrap.js' %}"></script>
+{% block script %}
+{% endblock %}
+</body>
+</html>

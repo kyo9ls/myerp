@@ -1,0 +1,49 @@
+{% extends 'mother_board.html' %}
+{% block pub_active %}
+
+{% endblock %}
+{% block supplier_active %}
+    active
+{% endblock %}
+{% block main %}
+    <h2 class="sub-header">供应商列表</h2>
+    <p>
+        <a href="/supplier_add/" class="btn btn-success">新增供应商</a>
+
+    </p>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+            <tr>
+                <th>序号</th>
+                <th>公司名称</th>
+                <th>供应商名称</th>
+                <th>预付款余额</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for adv in all_advs %}
+
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ adv.company.name }}</td>
+                    <td>{{ adv.supplier.name }}</td>
+                    <td>{{ adv.adv_payment }}</td>
+                    <td>
+                        <a class="btn btn-primary btn-sm"
+                           href="/order_list/?sup_no={{ adv.supplier.no }}&com_no={{ adv.company.no }}">查看</a>
+                        {#                        <a class="btn btn-danger btn-sm" href="/client_del/{{ debt.no }}">删除</a>#}
+                    </td>
+                </tr>
+            {% endfor %}
+
+
+            </tbody>
+        </table>
+
+    </div>
+    {#    {% load mytags %}#}
+    {#    {% pagination 6 %}#}
+    <a href="/supplier_list/" class="btn btn-default">返回</a>
+{% endblock %}

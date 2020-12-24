@@ -1,0 +1,42 @@
+{% extends 'mother_board.html' %}
+{% block left %}
+
+{% endblock %}
+{% block main %}
+    <h2 class="sub-header">新增商品</h2>
+
+    <div class="panel panel-primary">
+        <div class="panel-heading panel-primary">新增商品</div>
+        <p></p>
+        <form class="form-horizontal" method="post">
+            {% csrf_token %}
+            <div class="form-group  {% if error %}has-error{% endif %}">
+                    <label for="sup_name" class="col-sm-2 control-label">供应商名称</label>
+                    <div class="col-sm-9">
+                        <select name="sup_no" class="form-control">
+                            {% for sup in all_suppliers %}
+                                <option value="{{ sup.no }}">{{ sup.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                <label for="good_name" class="col-sm-2 control-label">商品名称</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" name="good_name">
+                </div>
+                <label for="buying_price" class="col-sm-2 control-label">进价</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" name="buying_price">
+                </div>
+                <div>
+                    <span class="help-block">{{ error }}</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button class="btn btn-info">提交</button>
+                    <a href="../good_list/" class="btn btn-default">返回</a>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}

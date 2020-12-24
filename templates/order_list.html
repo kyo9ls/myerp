@@ -1,0 +1,498 @@
+{% extends 'mother_board.html' %}
+
+{% block css %}
+    {% load static %}
+    <link href="{% static 'plugins/bootstrap-select/css/bootstrap-select.min.css' %}" rel="stylesheet">
+    <link href="{% static 'plugins/bootstrap-datepicker-master/css/bootstrap-datepicker.min.css' %}" rel="stylesheet">
+    <style>
+        label.xrequired:before {
+            content: '* ';
+            color: red;
+        }
+    </style>
+
+{% endblock %}
+{% block  order_active %}
+    active
+{% endblock %}
+{% block main %}<h2 class="sub-header">订单</h2>
+    {#    <div class="form-group clearfix">#}
+    <div class="col-xs-1">
+        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal" id="order_add">
+            新增
+        </button>
+    </div>
+    <form id="select_form" action="/order_list/" method="get">
+        {% csrf_token %}
+        <div class="form-group clearfix">
+            <button type="button" class="btn btn-primary" id="order_select">
+                查询
+            </button>
+        </div>
+
+        <div class="form-group clearfix" id="select_args">
+            <div class="col-md-2">
+                <label for="com_name" class="control-label">公司:</label>
+                <div class="input-group">
+                    <select name="com_no" class="selectpicker" data-size="5"
+                            data-width="200px" id="com_no" title="请选择公司" style="width: 150px">
+                        {% for com in all_companys %}
+                            <option value="{{ com.no }}">{{ com.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label for="sup_name" class="control-label">供应商:</label>
+                <div class="input-group">
+                    <select name="sup_no" class="selectpicker" data-size="5"
+                            data-width="200px" id="sup_no" title="请选择供应商">
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <label for="cli_name" class="control-label">客户:</label>
+                <div class="input-group">
+                    <select name="cli_no" class="selectpicker" data-size="5"
+                            data-width="200px" id="cli_no" title="请选择客户">
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label for="dri_name" class="control-label">司机:</label>
+                <div class="input-group">
+                    <select name="dri_no" class="selectpicker" data-size="5" data-live-search="true"
+                            data-width="200px" id="dri_no" title="请选择司机">
+                        {% for dri in all_drivers %}
+                            <option value="{{ dri.no }}">{{ dri.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label for="sale_name" class="control-label">销售:</label>
+                <div class="input-group">
+                    <select name="sale_no" class="selectpicker" data-size="5"
+                            data-width="200px" id="sale_no" title="请选择销售">
+                        {% for sale in all_sales %}
+                            <option value="{{ sale.no }}">{{ sale.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div class="col-md-2">
+                <label for="startDate" class="control-label">起始日期:</label>
+                <div class='input-group date' id='start_date' name="start_date">
+                    <input type='text' class="form-control" id="start" name="start"/>
+                    <span class="input-group-addon">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                </span>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label for="endDate" class="control-label">截至日期:</label>
+                <div class='input-group date' id='end_date' name="end_date">
+                    <input type='text' class="form-control" id="end" name="end"/>
+                    <span class="input-group-addon">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <span style="color: #ff0000">{{ select_error }}</span>
+            </div>
+        </div>
+    </form>
+    <div>
+        <table class="table table-striped table-hover table-responsive">
+            <thead>
+            <label>
+                <div class="col-md-6 left">
+                    <label></label>
+                </div>
+                <div class="col-md-6">
+                    <label>{{ s_date }}</label>
+                </div>
+            </label>
+            <tr>
+                <th>序号</th>
+                <th>日期</th>
+                <th>公司</th>
+                <th>供应商</th>
+                <th>客户</th>
+                <th>运费</th>
+                <th>售价</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% load mytags %}
+            {% for order in orders %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ order.order_date|date:'Y-m-d' }}</td>
+                    <td>{{ order.company.name }}</td>
+                    <td>{{ order.supplier.name }}</td>
+                    <td>{{ order.client.name }}</td>
+                    <td>{{ order.driver_price|times:order.number }}</td>
+                    <td>{{ order.goods_price|times:order.number }}</td>
+                    <td>
+                         <a class="btn btn-danger btn-sm" href="/order_del/?ord_no={{ order.no }}&url={{ url }}">删除</a>
+                        <button class="btn btn-primary btn-sm"
+                                onclick=window.open("/order_detal/?order_no={{ order.no }}")>
+                            查看
+                        </button>
+                    </td>
+                </tr>
+            {% endfor %}
+            {% if all_orders %}
+                <tr>
+                    <td>合计</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>{{ total_price }}</td>
+                </tr>
+            {% endif %}
+            </tbody>
+
+        </table>
+    </div>
+    {% if orders %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {{ page_html|safe }}
+            </ul>
+        </nav>
+    {% endif %}
+    <div class="modal fade bs-example-modal-lg" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog modal-lg" role="document" id="order_add_modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">创建订单</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="modal_form" class="form-horizontal" method="post">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="com_name_m" class="col-sm-2 control-label xrequired">公司:</label>
+                            <div class="col-md-3">
+                                <div class="input-group">
+                                    <select name="com_no" class="selectpicker" data-size="5"
+                                            data-width="200px" id="com_no_m" title="请选择公司">
+                                        {% for com in all_companys %}
+                                            <option value="{{ com.no }}">{{ com.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <label for="order_name" class="col-sm-2 control-label xrequired">订单日期:</label>
+                            <div class="right col-md-3">
+                                <div class="input-group date" id="order_date">
+                                    <input type='text' class="form-control" id="order_date_m" name="order_date"
+                                           placeholder=""/>
+                                    <span class="input-group-addon "><span class="glyphicon glyphicon-calendar"></span></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="sup_name_m" class="col-sm-2 control-label xrequired">供应商:</label>
+                            <div class="col-md-3">
+                                <div class="input-group">
+                                    <select name="sup_no" class="selectpicker" data-size="5"
+                                            data-width="200px" id="sup_no_m" title="请选择供应商">
+                                    </select>
+                                </div>
+                            </div>
+                            <label for="cli_name_m" class="col-sm-2 control-label xrequired">客户:</label>
+                            <div class="col-md-3">
+                                <div class="input-group">
+                                    <select name="cli_no" class="selectpicker" data-size="5"
+                                            data-width="200px" id="cli_no_m" title="请选择供应商">
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="dri_name_m" class="col-sm-2 control-label xrequired">司机:</label>
+                            <div class=" col-md-3">
+                                <div class="input-group">
+                                    <select name="dri_no" class="selectpicker" data-live-search="true" data-size="5"
+                                            data-width="200px" id="dri_no_m" title="请选择司机" style="width: 150px">
+                                        {% for dri in all_drivers %}
+                                            <option value="{{ dri.no }}">{{ dri.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <label for="dri_price_m" class="col-sm-2 control-label xrequired">运费:</label>
+                            <div class="col-md-3">
+                                <input type="text" onInput="value = value.replace(/[^\d.]/g,'')" class="form-control"
+                                       id="dri_price_m" name="dri_price" text=""
+                                       placeholder="">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="goods_price" class="col-sm-2 control-label xrequired">商品:</label>
+                            <div class="col-md-3">
+                                <select name="good_no" class="selectpicker" data-size="5"
+                                        data-width="200px" id="good_no_m" title="请选择商品">
+                                </select>
+                            </div>
+                            <label for="goods_price" class="col-sm-2 control-label">售价:</label>
+                            <div class="col-md-3">
+                                <input type="text" class="form-control"
+                                       onInput="value = value.replace(/[^\d.]/g,'')"
+                                       id="goods_price" name="goods_price" placeholder="">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="number" class="col-sm-2 control-label xrequired">数量:</label>
+                            <div class="col-md-3">
+                                <input type="text" onInput="value = value.replace(/[^\d.]/g,'')" class="form-control"
+                                       id="number" name="number"
+                                       placeholder="">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="sale_name_no" class="col-sm-2 control-label">销售:</label>
+                            <div class="col-md-3">
+                                <div class="input-group">
+                                    <select name="sale_no" class="selectpicker" data-size="5"
+                                            data-width="200px" id="sale_no_m" title="请选择销售" style="width: 150px">
+                                        {% for sale in all_sales %}
+                                            <option value="{{ sale.no }}">{{ sale.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div style="display:none" id="price">
+                                <label for="sale_price_m" class="col-sm-2 control-label xrequired">佣金:</label>
+                                <div class="col-md-3">
+                                    <input type="text" class="form-control"
+                                           onInput="value = value.replace(/[^\d.]/g ,'')"
+                                           id="sale_price_m" name="sale_price"
+                                           placeholder="">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="sale_name_no" class="col-sm-2 control-label">备注:</label>
+                            <div class="col-md-8">
+                                <input type="text" class="form-control"
+                                       id="remark" name="remark"
+                                       placeholder="">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <div class="col-lg-6">
+                                <span id="error" style="color: #ff0000"></span>
+                            </div>
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-primary" id="order_add_submit">确定</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>  {#modal_end#}
+{% endblock %}
+{% block script %}
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
+    <script src="{% static 'plugins/bootstrap-select/js/bootstrap-select.min.js' %}"></script>
+    <script src="{% static 'plugins/bootstrap-select/js/i18n/defaults-zh_CN.min.js' %}"></script>
+    <script src="{% static 'plugins/bootstrap-datepicker-master/js/bootstrap-datepicker.min.js' %}"></script>
+    <script src="{% static 'plugins/bootstrap-datepicker-master/locales/bootstrap-datepicker.zh-CN.min.js' %}"></script>
+
+
+    <script>
+        //日期框
+        $(function initDatePicker() {
+            $('#start_date,#end_date,#order_date').datepicker({
+                format: "yyyy-mm-dd",
+                language: "zh-CN",
+                startDate: "-1000d",
+                todayHighlight: true,
+                autoclose: true,
+            });
+        });
+        $(function () {
+            bindClickEvent();
+        });
+
+        //级联下拉框,外部
+        $('#com_no').change(function () {
+            $("#sup_no").empty();
+            $("#cli_no").empty();
+            $.ajax({
+                url: '/get_sup/',
+                type: 'get',
+                data: {'com_no': $(this).val()}
+            }).done(function (data) {
+                var data = JSON.parse(data)
+                for (var i = 0, len = data.sups.length; i < len; i++) {
+                    //添加选项
+                    newopt = document.createElement("option");
+                    newopt.text = data.sups[i][1];
+                    newopt.value = data.sups[i][0];
+                    document.getElementById("sup_no").options.add(newopt)
+                }
+                //使用refresh方法更新UI以匹配新状态。
+                $('#sup_no').selectpicker('refresh');
+                //render方法强制重新渲染引导程序 - 选择ui。
+                $('#sup_no').selectpicker('render');
+            });
+            $.ajax({
+                url: '/get_cli/',
+                type: 'get',
+                data: {'com_no': $(this).val()}
+            }).done(function (data) {
+                var data = JSON.parse(data)
+                for (var i = 0, len = data.clis.length; i < len; i++) {
+                    //添加选项
+                    newopt = document.createElement("option");
+                    newopt.text = data.clis[i][1];
+                    newopt.value = data.clis[i][0];
+                    document.getElementById("cli_no").options.add(newopt)
+                }
+                //使用refresh方法更新UI以匹配新状态。
+                $('#cli_no').selectpicker('refresh');
+                //render方法强制重新渲染引导程序 - 选择ui。
+                $('#cli_no').selectpicker('render');
+            })
+        });
+        //级联下拉框 供应商及客户 modal
+        $('#com_no_m').change(function () {
+            $("#sup_no_m").empty();
+            $("#cli_no_m").empty();
+            $.ajax({
+                url: '/get_sup/',
+                type: 'get',
+                data: {'com_no': $(this).val()}
+            }).done(function (data) {
+                var data = JSON.parse(data)
+                for (var i = 0, len = data.sups.length; i < len; i++) {
+                    //添加选项
+                    newopt = document.createElement("option");
+                    newopt.text = data.sups[i][1];
+                    newopt.value = data.sups[i][0];
+                    document.getElementById("sup_no_m").options.add(newopt)
+                }
+                //使用refresh方法更新UI以匹配新状态。
+                $('#sup_no_m').selectpicker('refresh');
+                //render方法强制重新渲染引导程序 - 选择ui。
+                $('#sup_no_m').selectpicker('render');
+            });
+            $.ajax({
+                url: '/get_cli/',
+                type: 'get',
+                data: {'com_no': $(this).val()}
+            }).done(function (data) {
+                var data = JSON.parse(data)
+                for (var i = 0, len = data.clis.length; i < len; i++) {
+                    //添加选项
+                    newopt = document.createElement("option");
+                    newopt.text = data.clis[i][1];
+                    newopt.value = data.clis[i][0];
+                    document.getElementById("cli_no_m").options.add(newopt)
+                }
+                //使用refresh方法更新UI以匹配新状态。
+                $('#cli_no_m').selectpicker('refresh');
+                //render方法强制重新渲染引导程序 - 选择ui。
+                $('#cli_no_m').selectpicker('render');
+            });
+        });
+        //级联下拉框 商品(供应商修改时) modal
+        $('#sup_no_m').change(function () {
+            $("#good_no_m").empty();
+            var order_date = $('#order_date_m').val();
+            $.ajax({
+                url: '/get_good/',
+                type: 'get',
+                data: {'sup_no': $(this).val(), 'order_date': order_date}
+            }).done(function (data) {
+                var data = JSON.parse(data)
+                for (var i = 0, len = data.goods.length; i < len; i++) {
+                    //添加选项
+                    newopt = document.createElement("option");
+                    newopt.text = data.goods[i][1];
+                    newopt.value = data.goods[i][0];
+                    document.getElementById("good_no_m").options.add(newopt)
+                }
+                //使用refresh方法更新UI以匹配新状态。
+                $('#good_no_m').selectpicker('refresh');
+                //render方法强制重新渲染引导程序 - 选择ui。
+                $('#good_no_m').selectpicker('render');
+            });
+        })
+        //级联下拉框 商品（订单日期修改时） modal
+        $('#order_date_m').change(function () {
+            $("#good_no_m").empty();
+            var sup_no = $('#sup_no_m').val();
+            if (sup_no) {
+                $.ajax({
+                    url: '/get_good/',
+                    type: 'get',
+                    data: {'sup_no': sup_no, 'order_date': $(this).val()}
+                }).done(function (data) {
+                    var data = JSON.parse(data)
+                    for (var i = 0, len = data.goods.length; i < len; i++) {
+                        //添加选项
+                        newopt = document.createElement("option");
+                        newopt.text = data.goods[i][1];
+                        newopt.value = data.goods[i][0];
+                        document.getElementById("good_no_m").options.add(newopt)
+                    }
+                    //使用refresh方法更新UI以匹配新状态。
+                    $('#good_no_m').selectpicker('refresh');
+                    //render方法强制重新渲染引导程序 - 选择ui。
+                    $('#good_no_m').selectpicker('render');
+                });
+            }
+        })
+
+        //创建订单,提交
+        function bindClickEvent() {
+            //modal 框
+            $('#order_add_submit').click(function () {
+                var order = {};
+                $('#order_add_modal').find('input,select').each(function () {
+                    var order_key = $(this).attr('name');
+                    var order_value = $(this).val();
+                    order[order_key] = order_value;
+                });
+                $.ajax({
+                    url: /order_add/,
+                    type: 'post',
+                    data: order,
+                    success: function (args) {
+                        var response_dict = JSON.parse(args)
+                        if (response_dict.status) {
+                            window.location.reload();
+                        } else {
+                            $('#error').text(response_dict.msg);
+                        }
+                    }
+                })
+            });
+        }
+
+
+        $(function () {
+            $('#order_select').click(function () {
+                document.getElementById("select_form").submit();
+                ;
+            })
+        });
+
+        $('#sale_no_m').change(function () {
+            document.getElementById('price').style.display = "inline";
+        })
+
+    </script>
+{% endblock %}

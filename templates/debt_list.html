@@ -1,0 +1,45 @@
+{% extends 'mother_board.html' %}
+{% block pub_active %}
+
+{% endblock %}
+{% block client_active %}
+    active
+{% endblock %}
+{% block main %}
+    <h2 class="sub-header">客户欠款</h2>
+    <a href="/client_add/" class="btn btn-success">新增客户</a>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+            <tr>
+                <th>序号</th>
+                <th>公司名称</th>
+                <th>客户名称</th>
+                <th>客户欠款</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for debt in all_debts %}
+
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ debt.company.name }}</td>
+                    <td>{{ debt.client.name }}</td>
+                    <td>{{ debt.debt }}</td>
+                    <td>
+                        <a class="btn btn-primary btn-sm"
+                           href="/order_list/?cli_no={{ debt.client.no }}&com_no={{ debt.company.no }}">查看</a>
+                        {#                        <a class="btn btn-danger btn-sm" href="/client_del/{{ debt.no }}">删除</a>#}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+
+    </div>
+    {#    {% load mytags %}#}
+    {#    {% pagination 6 %}#}
+    <a href="/client_list/" class="btn btn-default">返回</a>
+{% endblock %}
