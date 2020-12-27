@@ -209,7 +209,7 @@ class ClientAdd(View):
                 # 将数据新增到数据库中
                 with transaction.atomic():
                     cli_obj = models.Client.objects.create(name=cli_name)
-                    cli_obj.company_set.add(cli_obj.no)
+                    cli_obj.company_set.add(com_no)
                     models.Debt.objects.create(company_id=com_no, client_id=cli_obj.no)
                 # 返回一个重定向到展示供应商的页面
                 return redirect('/client_list/')
@@ -236,7 +236,7 @@ def client_edit(request):
             if not cli_name:
                 return render(request, 'client_edit.html', {'error': '名称不能为空', 'cli_obj': cli_obj})
             # 输入重复
-            elif models.Client.objects.filter(client__name=cli_name):
+            elif models.Client.objects.filter(name=cli_name):
                 return render(request, 'client_edit.html', {'error': '名称重复', 'cli_obj': cli_obj})
             # 输入有效
             else:
