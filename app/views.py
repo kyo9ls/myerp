@@ -10,6 +10,112 @@ import base64
 
 
 # Create your views here.
+def create_excel(select_dict, is_all_company=False, user=''):
+    import xlwt
+    import datetime
+    thead = ['日期', '公司', '供应商', '客户', '商品', '售价', '数量', '车号', '运费', '代理', '佣金']
+    tdata = ['order_date', 'company__name', 'supplier__name', 'client__name',
+             'good__name', 'goods_price', 'number', 'driver__name', 'driver_price',
+             'sale__name', 'sale_price']
+    tdic = dict(zip(thead, tdata))
+    file_name = '/excel/%s.xls' % (datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
+    # 文件路径
+    file_path = os.path.abspath('.') + file_name
+    # excel格式
+    common_style = xlwt.XFStyle()
+    date_style = xlwt.XFStyle()
+    borders = xlwt.Borders()
+    borders.left = 1
+    borders.right = 1
+    borders.top = 1
+    borders.bottom = 1
+    common_style.borders = borders
+    date_style.borders = borders
+    date_style.num_format_str = 'yyyy"年"m"月"d"日"'
+    wb = xlwt.Workbook(encoding='utf-8')  # 创建Excel
+    if not is_all_company:
+        ws = wb.add_sheet('sheet1', True)  # 创建sheet
+        orders = models.Order.objects.values_list(*tdic.values()).filter(**select_dict).distinct().order_by(
+            'order_date')
+        # 写入表头
+        ws.write(0, 0, '序号')
+        for i in range(len(thead)):
+            ws.write(0, i + 1, thead[i])
+        # 写入数据
+        count = 1  # 序号
+        for i in range(len(orders)):
+            ws.write(i + 1, 0, count, common_style)
+            for j in range(len(orders[i])):
+                ws.write(i + 1, j + 1, orders[i][j], date_style if j == 0 else common_style)
+            count += 1
+        ws.col(1).width = 4000
+        ws.col(2).width = 5000
+        ws.col(8).width = 3000
+        wb.save(file_path)
+        return file_path
+    else:
+        all_company = models.Company.objects.values_list('no', 'name').filter(user_id=user)
+        for company in all_company:
+            ws = wb.add_sheet(company[1], True)  # 创建sheet
+            select_dict['company_id'] = company[0]
+            orders = models.Order.objects.values_list(*tdic.values()).filter(**select_dict).distinct().order_by(
+                'order_date')
+            # 写入表头
+            ws.write(0, 0, '序号')
+            for i in range(len(thead)):
+                ws.write(0, i + 1, thead[i])
+            # 写入数据
+            count = 1  # 序号
+            for i in range(len(orders)):
+                ws.write(i + 1, 0, count, common_style)
+                for j in range(len(orders[i])):
+                    ws.write(i + 1, j + 1, orders[i][j], date_style if j == 0 else common_style)
+                count += 1
+            ws.col(1).width = 4000
+            ws.col(2).width = 5000
+            ws.col(8).width = 3000
+            wb.save(file_path)
+        return file_path
+
+
+def download(request):
+    if user_id(request):
+        user = user_id(request)
+    else:
+        return redirect('/login/')
+    # 获取订单
+    select_dict = {}
+    select_dict['company__user_id'] = user
+    select_dict['company_id'] = request.GET.get('com_no')
+    select_dict['supplier_id'] = request.GET.get('sup_no')
+    select_dict['client_id'] = request.GET.get('cli_no')
+    select_dict['driver_id'] = request.GET.get('dri_no')
+    select_dict['sale_id'] = request.GET.get('sale_no')
+    select_dict['order_date__gte'] = request.GET.get('start')
+    select_dict['order_date__lte'] = request.GET.get('end')
+    for key in list(select_dict):
+        if not select_dict[key]:
+            del select_dict[key]
+    try:
+        file_path = create_excel(select_dict)
+        from django.http import StreamingHttpResponse
+
+        def file_iterator(file_name):
+            with open(file_name, 'rb')as f:
+                while True:
+                    c = f.read(512)
+                    if c:
+                        yield c
+                    else:
+                        break
+
+        response = StreamingHttpResponse(file_iterator(file_path))
+        response['Content-Type'] = 'application/octet-stream'
+        response['Content-Disposition'] = "attachment;filename={0}".format(file_path.split('/')[-1])
+        return response
+    except Exception as e:
+        return HttpResponse('导出失败\n' + str(e))
+
 
 # 登录
 def login(request):
@@ -209,7 +315,7 @@ class ClientAdd(View):
                 # 将数据新增到数据库中
                 with transaction.atomic():
                     cli_obj = models.Client.objects.create(name=cli_name)
-                    cli_obj.company_set.add(cli_obj.no)
+                    cli_obj.company_set.add(com_no)
                     models.Debt.objects.create(company_id=com_no, client_id=cli_obj.no)
                 # 返回一个重定向到展示供应商的页面
                 return redirect('/client_list/')
@@ -236,7 +342,7 @@ def client_edit(request):
             if not cli_name:
                 return render(request, 'client_edit.html', {'error': '名称不能为空', 'cli_obj': cli_obj})
             # 输入重复
-            elif models.Client.objects.filter(client__name=cli_name):
+            elif models.Client.objects.filter(name=cli_name):
                 return render(request, 'client_edit.html', {'error': '名称重复', 'cli_obj': cli_obj})
             # 输入有效
             else:

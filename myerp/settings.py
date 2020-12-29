@@ -24,7 +24,7 @@ SECRET_KEY = 'lb+=bw#a0y5=#oclekl(p$#7rf_t4*0^avtl(t9zq9=lgz@slq'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'app.apps.AppConfig',
+    'django_crontab',
+
 ]
 
 MIDDLEWARE = [
@@ -76,8 +78,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'myerp',
-        'USER': 'root',
-        'PASSWORD': '124578',
+        'USER': 'rofl',
+        'PASSWORD': '124578Qq',
         'HOST': '127.0.0.1',
         'PORT': 3306,
     }
@@ -125,3 +127,7 @@ STATICFILES_DIRS = [
 ]
 SESSION_COOKIE_AGE = 86400
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+# 定时任务
+CRONJOBS = (
+    ('*/1 * * * *', 'app.cron.test'),
+)

@@ -20,6 +20,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', views.login),
     path('logout/', views.logout),
+    path('download/', views.download),
 
     path('get_cli/', views.get_cli),
     path('get_sup/', views.get_sup),
