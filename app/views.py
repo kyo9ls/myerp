@@ -22,6 +22,7 @@ def create_excel(select_dict, is_all_company=False, user=''):
     file_name = '/excel/%s.xls' % (datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
     # 文件路径
     file_path = os.path.abspath('.') + file_name
+    print(os.path.abspath('.'))
     # excel格式
     common_style = xlwt.XFStyle()
     date_style = xlwt.XFStyle()
