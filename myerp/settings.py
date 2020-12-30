@@ -108,13 +108,13 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
@@ -127,7 +127,9 @@ STATICFILES_DIRS = [
 ]
 SESSION_COOKIE_AGE = 86400
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
 # 定时任务
+#
 CRONJOBS = (
-    ('*/1 * * * *', 'app.cron.test'),
+    ('15 * * * *', 'app.cron.test', '>>' + os.path.join(BASE_DIR, 'app/test.log')),
 )
